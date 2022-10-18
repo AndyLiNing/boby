@@ -3,5 +3,339 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
+    "boby-lib": {
+      "projectType": "library",
+      "root": "projects/libs/boby-lib",
+      "sourceRoot": "projects/libs/boby-lib/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/libs/boby-lib/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/libs/boby-lib/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/libs/boby-lib/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/libs/boby-lib/src/test.ts",
+            "tsConfig": "projects/libs/boby-lib/tsconfig.spec.json",
+            "karmaConfig": "projects/libs/boby-lib/karma.conf.js"
+          }
+        }
+      }
+    },
+    "boby-element": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "root": "projects/apps/boby-element",
+      "sourceRoot": "projects/apps/boby-element/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/apps/boby-element",
+            "index": "projects/apps/boby-element/src/index.html",
+            "main": "projects/apps/boby-element/src/main.ts",
+            "polyfills": "projects/apps/boby-element/src/polyfills.ts",
+            "tsConfig": "projects/apps/boby-element/tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              "projects/apps/boby-element/src/favicon.ico",
+              "projects/apps/boby-element/src/assets"
+            ],
+            "styles": [
+              "projects/apps/boby-element/src/styles.scss"
+            ],
+            "scripts": []
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kb",
+                  "maximumError": "1mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "2kb",
+                  "maximumError": "4kb"
+                }
+              ],
+              "fileReplacements": [
+                {
+                  "replace": "projects/apps/boby-element/src/environments/environment.ts",
+                  "with": "projects/apps/boby-element/src/environments/environment.prod.ts"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "configurations": {
+            "production": {
+              "browserTarget": "boby-element:build:production"
+            },
+            "development": {
+              "browserTarget": "boby-element:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "browserTarget": "boby-element:build"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/apps/boby-element/src/test.ts",
+            "polyfills": "projects/apps/boby-element/src/polyfills.ts",
+            "tsConfig": "projects/apps/boby-element/tsconfig.spec.json",
+            "karmaConfig": "projects/apps/boby-element/karma.conf.js",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              "projects/apps/boby-element/src/favicon.ico",
+              "projects/apps/boby-element/src/assets"
+            ],
+            "styles": [
+              "projects/apps/boby-element/src/styles.scss"
+            ],
+            "scripts": []
+          }
+        }
+      }
+    },
+    "boby-app": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "root": "projects/apps/boby-app",
+      "sourceRoot": "projects/apps/boby-app/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/apps/boby-app",
+            "index": "projects/apps/boby-app/src/index.html",
+            "main": "projects/apps/boby-app/src/main.ts",
+            "polyfills": "projects/apps/boby-app/src/polyfills.ts",
+            "tsConfig": "projects/apps/boby-app/tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              "projects/apps/boby-app/src/favicon.ico",
+              "projects/apps/boby-app/src/assets"
+            ],
+            "styles": [
+              "projects/apps/boby-app/src/styles.scss",
+              "node_modules/boby-element-v2/styles.css"
+            ],
+            "scripts": [
+              "node_modules/boby-element-v2/boby-element-v2.js"
+            ]
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kb",
+                  "maximumError": "1mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "2kb",
+                  "maximumError": "4kb"
+                }
+              ],
+              "fileReplacements": [
+                {
+                  "replace": "projects/apps/boby-app/src/environments/environment.ts",
+                  "with": "projects/apps/boby-app/src/environments/environment.prod.ts"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "configurations": {
+            "production": {
+              "browserTarget": "boby-app:build:production"
+            },
+            "development": {
+              "browserTarget": "boby-app:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "browserTarget": "boby-app:build"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/apps/boby-app/src/test.ts",
+            "polyfills": "projects/apps/boby-app/src/polyfills.ts",
+            "tsConfig": "projects/apps/boby-app/tsconfig.spec.json",
+            "karmaConfig": "projects/apps/boby-app/karma.conf.js",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              "projects/apps/boby-app/src/favicon.ico",
+              "projects/apps/boby-app/src/assets"
+            ],
+            "styles": [
+              "projects/apps/boby-app/src/styles.scss"
+            ],
+            "scripts": []
+          }
+        }
+      }
+    },
+    "boby-element-v2": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "root": "projects/apps/boby-element-v2",
+      "sourceRoot": "projects/apps/boby-element-v2/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/apps/boby-element-v2",
+            "index": "projects/apps/boby-element-v2/src/index.html",
+            "main": "projects/apps/boby-element-v2/src/main.ts",
+            "polyfills": "projects/apps/boby-element-v2/src/polyfills.ts",
+            "tsConfig": "projects/apps/boby-element-v2/tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              "projects/apps/boby-element-v2/src/favicon.ico",
+              "projects/apps/boby-element-v2/src/assets"
+            ],
+            "styles": [
+              "projects/apps/boby-element-v2/src/styles.scss"
+            ],
+            "scripts": []
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kb",
+                  "maximumError": "1mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "2kb",
+                  "maximumError": "4kb"
+                }
+              ],
+              "fileReplacements": [
+                {
+                  "replace": "projects/apps/boby-element-v2/src/environments/environment.ts",
+                  "with": "projects/apps/boby-element-v2/src/environments/environment.prod.ts"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "configurations": {
+            "production": {
+              "browserTarget": "boby-element-v2:build:production"
+            },
+            "development": {
+              "browserTarget": "boby-element-v2:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "browserTarget": "boby-element-v2:build"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/apps/boby-element-v2/src/test.ts",
+            "polyfills": "projects/apps/boby-element-v2/src/polyfills.ts",
+            "tsConfig": "projects/apps/boby-element-v2/tsconfig.spec.json",
+            "karmaConfig": "projects/apps/boby-element-v2/karma.conf.js",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              "projects/apps/boby-element-v2/src/favicon.ico",
+              "projects/apps/boby-element-v2/src/assets"
+            ],
+            "styles": [
+              "projects/apps/boby-element-v2/src/styles.scss"
+            ],
+            "scripts": []
+          }
+        }
+      }
+    }
   }
 }

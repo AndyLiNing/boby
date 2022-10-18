@@ -1,0 +1,15 @@
+{
+  "name": "boby-element-v2",
+  "version": "1.0.0",
+  "main": "karma.conf.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ning LI",
+  "license": "MIT",
+  "files": [
+    "boby-element-v2.js",
+    "styles.css"
+  ],
+  "description": ""
+}

@@ -3,8 +3,13 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
+    "start": "ng serve --project boby-app",
+    "build:element": "ng build --project boby-element --output-hashing none && npm run pack:boby-element && cp projects/apps/boby-element/package.json dist/apps/boby-element",
+    "pack:boby-element": "cat ./dist/apps/boby-element/{runtime,polyfills,main}.js > dist/apps/boby-element/boby-element.js && ls -lah dist/apps/boby-element/boby-element.js",
+    "build:element-v2": "ng build --project boby-element-v2 --output-hashing none && npm run pack:boby-element-v2 && cp projects/apps/boby-element-v2/package.json dist/apps/boby-element-v2",
+    "pack:boby-element-v2": "cat ./dist/apps/boby-element/{runtime,polyfills,main}.js > dist/apps/boby-element-v2/boby-element-v2.js && ls -lah dist/apps/boby-element-v2/boby-element-v2.js",
+    "build:elements": "ng build app-elements --output-hashing none && cp projects/app-elements/package.json dist/app-elements",
+    "build:app": "ng build --prod --project boby-app",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
@@ -14,15 +19,18 @@
     "@angular/common": "^14.2.0",
     "@angular/compiler": "^14.2.0",
     "@angular/core": "^14.2.0",
+    "@angular/elements": "^14.2.6",
     "@angular/forms": "^14.2.0",
     "@angular/platform-browser": "^14.2.0",
     "@angular/platform-browser-dynamic": "^14.2.0",
     "@angular/router": "^14.2.0",
+    "boby-element-v2": "^1.0.0",
     "rxjs": "~7.5.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.11.4"
   },
   "devDependencies": {
+    "@angular-devkit/build-angular": "^14.2.6",
     "@angular/cli": "~14.2.6",
     "@angular/compiler-cli": "^14.2.0",
     "@types/jasmine": "~4.0.0",
@@ -32,6 +40,7 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.0.0",
+    "ng-packagr": "^14.2.0",
     "typescript": "~4.7.2"
   }
 }
