@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
-import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from "@angular/common/http";
+import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from "@angular/common/http";
 
-import { concatMap, Observable } from "rxjs";
+import { catchError, concatMap, EMPTY, Observable } from "rxjs";
 
 import { TokenService } from "./token.service";
 
@@ -15,9 +15,16 @@ export class TokenInterceptor implements HttpInterceptor {
         concatMap((accessToken) =>
            next.handle(
              req.clone({
-               headers: req.headers.set('bearer ', accessToken)
+               headers: req.headers.set('Bearer ', accessToken)
              })
-           )
+           ).pipe(catchError((error: HttpErrorResponse) => {
+              // TODO: Catch the refresh token expires error
+              if(error.error === ''){
+                return EMPTY;
+              }
+             throw error;
+           }))
         ))
   }
+
 }
