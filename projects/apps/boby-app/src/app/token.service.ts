@@ -23,22 +23,20 @@ const TOKEN_URL =  'https://jsonplaceholder.typicode.com/posts/1';
 })
 export class TokenService {
 
-  private refreshToken$$ = new BehaviorSubject<string>('');
   private initAccessToken$$ = new BehaviorSubject<string>('');
+  private refreshToken$$ = new BehaviorSubject<string>('');
   private expiresIn$$ = new BehaviorSubject<number>(0);
 
   constructor(private httpClient: HttpClient, @Inject (DOCUMENT) private document: Document) {}
 
   init() {
     // TODO: Add retrieve refresh token from Session Storage codes (in the case of reloading page)
-    const redirectUri1 = this.getRedirectUri();
-    this.httpClient.get<AuthTokensResponse>(buildGetAuthCodeUrl(redirectUri1)).pipe(
-      concatMap(() => {
-        const authCode = this.getAuthCodeFromUrl();
-        const redirectUri2 = this.getRedirectUri();
-        const body = buildFetchTokenByAuthCodeBody(authCode, redirectUri2);
-        return this.httpClient.post<AuthTokensResponse>(TOKEN_URL, body, HEADER)
-      }),
+    this.httpClient.get<AuthTokensResponse>(buildGetAuthCodeUrl(this.getRedirectUri())).pipe(
+      concatMap(() =>
+        this.httpClient.post<AuthTokensResponse>(TOKEN_URL,
+                                                 buildFetchTokenByAuthCodeBody(this.getAuthCodeFromUrl(), this.getRedirectUri()),
+                                                 HEADER )
+      ),
       tap(({refreshToken, accessToken, expires_in}) => {
           this.refreshToken$$.next(refreshToken);
           this.initAccessToken$$.next(accessToken);
@@ -64,9 +62,7 @@ export class TokenService {
 
   private getAuthCodeFromUrl() {
     const { search } = this.document.defaultView!.location;
-
     return '';
-
   }
 
   private getAccessToken() {
@@ -88,7 +84,7 @@ export class TokenService {
       map(({ accessToken }) => accessToken),
       share({
         connector: () => new ReplaySubject(1),
-        resetOnComplete: () => timer(ACCESS_TOKEN_TIMEOUT),
+        resetOnComplete: () => timer(this.expiresIn$$.getValue() - 10),
       }));
 
   }
