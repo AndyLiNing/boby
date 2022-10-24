@@ -2,7 +2,7 @@ import pkceChallenge from 'pkce-challenge';
 
 import { HOST, PATH } from "./token.config";
 
-export const { code_challenge, code_verifier } = pkceChallenge();
+const { code_challenge, code_verifier } = pkceChallenge();
 
 export const buildGetAuthCodeUrl = (redirectUri: string) => {
   const queryParams = [
