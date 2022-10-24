@@ -41,6 +41,7 @@ export class TokenService {
     }));
 
   private buildRefreshTokenOption(refreshToken: string): { headers: HttpHeaders } {
+    // TODO: Adapting the refresh token header
     return { headers: new HttpHeaders().set('refreshToken', refreshToken)}
   }
 
