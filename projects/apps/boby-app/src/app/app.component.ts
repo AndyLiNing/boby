@@ -1,5 +1,5 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {TokenService} from "./token.service";
+import {TokenService} from "./token/token.service";
 
 @Component({
   selector: 'app-root',
