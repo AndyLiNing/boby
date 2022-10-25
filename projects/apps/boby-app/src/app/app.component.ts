@@ -8,6 +8,7 @@ import {TokenService} from "./token.service";
 })
 export class AppComponent implements OnInit, OnDestroy{
   title = 'boby-app';
+
   constructor(private tokenService: TokenService) {
     this.tokenService.fakeInit();
   }

@@ -1,18 +1,25 @@
-import { Inject, Injectable } from "@angular/core";
+import {Inject, Injectable, OnDestroy} from "@angular/core";
 import { DOCUMENT } from "@angular/common";
-import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { HttpClient } from "@angular/common/http";
 
 import {
-  BehaviorSubject, concatMap, map,
+  BehaviorSubject, catchError, concatMap, EMPTY, map,
   ReplaySubject,
-  share,
+  share, Subscription,
   tap,
   timer
 } from "rxjs";
 
-import { buildFetchTokenByAuthCodeBody, buildGetAuthCodeUrl } from './token.utils'
-import { HEADER } from "./token.config";
-import { AuthTokensResponse } from "./token.model";
+import {
+  buildFetchTokenByAuthCodeBody,
+  buildFetchTokenByRefreshTokenBody,
+  buildFetchTokenUrl,
+  buildFetchAuthCodeUrl
+} from './token.utils'
+
+import { HEADER, REFRESH_TOKEN_STORAGE_KEY } from "./token.config";
+import { TokensResponse } from "./token.model";
+import { Router } from "@angular/router";
 
 // TODO: Temporary code testing purpose
 const ACCESS_TOKEN_TIMEOUT = 10 * 1000;
@@ -21,39 +28,55 @@ const TOKEN_URL =  'https://jsonplaceholder.typicode.com/posts/1';
 @Injectable({
   providedIn: 'root'
 })
-export class TokenService {
+export class TokenService implements OnDestroy{
 
   private initAccessToken$$ = new BehaviorSubject<string>('');
   private refreshToken$$ = new BehaviorSubject<string>('');
   private expiresIn$$ = new BehaviorSubject<number>(0);
+  private subscription = new Subscription();
 
-  constructor(private httpClient: HttpClient, @Inject (DOCUMENT) private document: Document) {}
+  constructor( private router: Router, private httpClient: HttpClient, @Inject (DOCUMENT) private document: Document) {}
 
   init() {
-    // TODO: Add retrieve refresh token from Session Storage codes (in the case of reloading page)
-    this.httpClient.get<AuthTokensResponse>(buildGetAuthCodeUrl(this.getRedirectUri())).pipe(
-      concatMap(() =>
-        this.httpClient.post<AuthTokensResponse>(TOKEN_URL,
-                                                 buildFetchTokenByAuthCodeBody(this.getAuthCodeFromUrl(), this.getRedirectUri()),
-                                                 HEADER )
-      ),
-      tap(({refreshToken, accessToken, expires_in}) => {
-          this.refreshToken$$.next(refreshToken);
-          this.initAccessToken$$.next(accessToken);
-          this.expiresIn$$.next(expires_in);
-    }));
-
+    // Note in the case of reloading the page
+    const refreshToken = sessionStorage.getItem(REFRESH_TOKEN_STORAGE_KEY);
+    if (refreshToken) {
+      return this.refreshToken$$.next(refreshToken);
+    }
+    this.fetchTokensByAuthCode();
   }
 
-  // TODO: Pseudo codes, to be removed
+  // TODO: Temporary code, testing purpose
   fakeInit(){
     this.refreshToken$$.next('Fake Refresh Token');
     this.initAccessToken$$.next('Fake Access Token');
     this.expiresIn$$.next(300);
-    console.log('getRedirectUri: ', this.getRedirectUri())
   }
 
   accessToken$ = this.getAccessToken();
+
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
+  }
+
+  private fetchTokensByAuthCode() {
+    this.subscription.add(
+        this.httpClient.get<TokensResponse>(buildFetchAuthCodeUrl(this.getRedirectUri())).pipe(
+          concatMap(() =>
+            this.httpClient.post<TokensResponse>(
+              buildFetchTokenUrl(),
+              buildFetchTokenByAuthCodeBody(this.getAuthCodeFromUrl(), this.getRedirectUri()),
+              HEADER)
+          ),
+          tap(({refreshToken, accessToken, expires_in}) => {
+            this.updateRefreshToken(refreshToken);
+            this.initAccessToken$$.next(accessToken);
+            this.expiresIn$$.next(expires_in);
+          }),
+          catchError(this.redirectToArcade)
+        ).subscribe()
+    );
+  }
 
   private getRedirectUri () {
     const { protocol, host, pathname } = this.document.defaultView!.location
@@ -69,7 +92,7 @@ export class TokenService {
     if(!this.isInitAccessTokenExpired()) {
       return this.initAccessToken$$.asObservable();
     }
-    // TODO: To be removed, testing purpose
+    // TODO: Temporary code, testing purpose
     return this.httpClient.get<string>(TOKEN_URL).pipe(
       tap((data) =>  this.refreshToken$$.next(data)),
       map((data) => data),
@@ -78,26 +101,20 @@ export class TokenService {
         resetOnComplete: () => timer(ACCESS_TOKEN_TIMEOUT),
       }));
 
-    return this.httpClient.post<AuthTokensResponse>(TOKEN_URL, this.buildFetchTokenByRefreshTokenBody()).pipe(
+    return this.httpClient.post<TokensResponse>(
+      buildFetchTokenUrl(),
+      buildFetchTokenByRefreshTokenBody(this.refreshToken$$.getValue()),
+      HEADER
+    ).pipe(
       tap(() =>  this.initAccessToken$$.next('')),
-      tap(({ refreshToken }) =>  this.refreshToken$$.next(refreshToken)),
+      tap(({ refreshToken }) => this.updateRefreshToken(refreshToken)),
       map(({ accessToken }) => accessToken),
       share({
         connector: () => new ReplaySubject(1),
         resetOnComplete: () => timer(this.expiresIn$$.getValue() - 10),
-      }));
+      }),
+      catchError(this.redirectToArcade));
 
-  }
-
-  private buildFetchTokenByRefreshTokenBody(): { headers: HttpHeaders } | void {
-
-    const refreshToke = this.refreshToken$$.getValue();
-    if(!refreshToke){
-      throw new Error('Refresh token empty! Please check if the refresh token has been handled correctly.')
-    }
-
-    // TODO: Adapting the refresh token header
-    return { headers: new HttpHeaders().set('refreshToken', refreshToke)}
   }
 
   private isInitAccessTokenExpired(): boolean {
@@ -107,5 +124,17 @@ export class TokenService {
     }
     return this.initAccessToken$$.getValue() !== 'test';
   }
+
+  private updateRefreshToken(refreshToken: string) {
+    sessionStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, refreshToken);
+    this.refreshToken$$.next(refreshToken);
+  }
+
+  private redirectToArcade() {
+      // TODO: Redirect to ARCADE
+      this.router.navigate([]);
+      return EMPTY;
+  }
+
 
 }
