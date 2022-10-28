@@ -14,7 +14,7 @@ export const buildFetchAuthCodeUrl = (redirectUri: string) => {
     `redirect_uri= ${redirectUri}`,
     `code_challenge=${code_challenge}`,
     `code_challenge_method=S256`,
-    `prompt=none`
+    // `prompt=none`
   ]
   return HOST + GET_BY_AUTH_CODE_PATH + '?' + queryParams.join('&')
 }

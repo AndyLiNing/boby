@@ -1,4 +1,4 @@
-import {Inject, Injectable, OnDestroy} from "@angular/core";
+import { Inject, Injectable, OnDestroy } from "@angular/core";
 import { DOCUMENT } from "@angular/common";
 import { HttpClient } from "@angular/common/http";
 
@@ -28,7 +28,7 @@ const TOKEN_URL =  'https://jsonplaceholder.typicode.com/posts/1';
 @Injectable({
   providedIn: 'root'
 })
-export class TokenService implements OnDestroy{
+export class TokenService implements OnDestroy {
 
   private initAccessToken$$ = new BehaviorSubject<string>('');
   private refreshToken$$ = new BehaviorSubject<string>('');
@@ -40,8 +40,8 @@ export class TokenService implements OnDestroy{
   init() {
     // Note in the case of reloading the page
     const refreshToken = sessionStorage.getItem(REFRESH_TOKEN_STORAGE_KEY);
-    if (refreshToken) {
-      return this.refreshToken$$.next(refreshToken);
+    if (this.isRefreshTokenValid(refreshToken)) {
+      // return this.refreshToken$$.next(refreshToken);
     }
     this.fetchTokensByAuthCode();
   }
@@ -49,7 +49,7 @@ export class TokenService implements OnDestroy{
   // TODO: Temporary code, testing purpose
   fakeInit(){
     this.refreshToken$$.next('Fake Refresh Token');
-    this.initAccessToken$$.next('Fake Access Token');
+    this.initAccessToken$$.next('Fake init Access Token');
     this.expiresIn$$.next(300);
   }
 
@@ -62,6 +62,9 @@ export class TokenService implements OnDestroy{
   private fetchTokensByAuthCode() {
     this.subscription.add(
         this.httpClient.get<TokensResponse>(buildFetchAuthCodeUrl(this.getRedirectUri())).pipe(
+          tap((data) => {
+            console.log('data: ', data)
+          }),
           concatMap(() =>
             this.httpClient.post<TokensResponse>(
               buildFetchTokenUrl(),
@@ -89,6 +92,7 @@ export class TokenService implements OnDestroy{
   }
 
   private getAccessToken() {
+
     if(!this.isInitAccessTokenExpired()) {
       return this.initAccessToken$$.asObservable();
     }
@@ -122,7 +126,7 @@ export class TokenService implements OnDestroy{
     if(!this.initAccessToken$$.getValue()){
       return true;
     }
-    return this.initAccessToken$$.getValue() !== 'test';
+    return this.initAccessToken$$.getValue() !== 'Fake init Access Token';
   }
 
   private updateRefreshToken(refreshToken: string) {
@@ -132,9 +136,16 @@ export class TokenService implements OnDestroy{
 
   private redirectToArcade() {
       // TODO: Redirect to ARCADE
-      this.router.navigate([]);
+      // this.router.navigate([]);
       return EMPTY;
   }
 
+  private isRefreshTokenValid (refreshToken: string | null) {
+    if(!refreshToken){
+      return false;
+    }
+    // TODO: Logic to check if the token is valid
+    return false;
+  }
 
 }

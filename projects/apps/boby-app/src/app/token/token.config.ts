@@ -1,6 +1,6 @@
 export const HEADER = { headers: {'content-type' : 'application/x-www-form-urlencoded'} }
 
-export const HOST = 'iam.sandbox.bouyguestelecom.fr/ap3/';
+export const HOST = 'https://iam.sandbox.bouyguestelecom.fr/ap3/';
 
 export const REFRESH_TOKEN_STORAGE_KEY = 'gd_refresh_token';
 
