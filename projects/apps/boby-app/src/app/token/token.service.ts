@@ -3,7 +3,7 @@ import { DOCUMENT } from "@angular/common";
 import { HttpClient } from "@angular/common/http";
 
 import {
-  BehaviorSubject, catchError, concatMap, EMPTY, map,
+  BehaviorSubject, catchError, EMPTY, map,
   ReplaySubject,
   share, Subscription,
   tap,
@@ -14,10 +14,18 @@ import {
   buildFetchTokenByAuthCodeBody,
   buildFetchTokenByRefreshTokenBody,
   buildFetchTokenUrl,
-  buildFetchAuthCodeUrl
+  buildFetchAuthCodeUrl,
+  isJwtTokenExpired
 } from './token.utils'
 
-import { HEADER, REFRESH_TOKEN_STORAGE_KEY } from "./token.config";
+import {
+  AUTH_CODE_QUERY_PARAM_KEY,
+  AUTH_CODE_ERROR_QUERY_PARAM_KEY,
+  HAS_FETCHED_AUTH_CODE_KEY,
+  HEADER,
+  HOST,
+  REFRESH_TOKEN_STORAGE_KEY
+} from "./token.config";
 import { TokensResponse } from "./token.model";
 import { Router } from "@angular/router";
 
@@ -38,72 +46,60 @@ export class TokenService implements OnDestroy {
   constructor( private router: Router, private httpClient: HttpClient, @Inject (DOCUMENT) private document: Document) {}
 
   init() {
-    // Note in the case of reloading the page
-    const refreshToken = sessionStorage.getItem(REFRESH_TOKEN_STORAGE_KEY);
-    if (this.isRefreshTokenValid(refreshToken)) {
-      // return this.refreshToken$$.next(refreshToken);
+    if(!this.hasFetchedAuthCode()) {
+      sessionStorage.removeItem(HAS_FETCHED_AUTH_CODE_KEY);
     }
-    this.fetchTokensByAuthCode();
-  }
 
-  // TODO: Temporary code, testing purpose
-  fakeInit(){
-    this.refreshToken$$.next('Fake Refresh Token');
-    this.initAccessToken$$.next('Fake init Access Token');
-    this.expiresIn$$.next(300);
+    // Note: in the case of reloading the page, to avoid re-fetching auth_code
+    const refreshToken = sessionStorage.getItem(REFRESH_TOKEN_STORAGE_KEY) ?? '';
+    if (!isJwtTokenExpired(refreshToken)) {
+      return this.refreshToken$$.next(refreshToken);
+    }
+
+    this.fetchTokensByAuthCode();
   }
 
   accessToken$ = this.getAccessToken();
 
+  // TODO: Optional
   ngOnDestroy(): void {
     this.subscription.unsubscribe();
   }
 
   private fetchTokensByAuthCode() {
+    const hasFetchedAuthCode = !!sessionStorage.getItem(HAS_FETCHED_AUTH_CODE_KEY);
+    if (!hasFetchedAuthCode) {
+        this.fetchAuthCodeAndUpdateStorageFetchingFlag();
+    }
     this.subscription.add(
-        this.httpClient.get<TokensResponse>(buildFetchAuthCodeUrl(this.getRedirectUri())).pipe(
-          tap((data) => {
-            console.log('data: ', data)
-          }),
-          concatMap(() =>
             this.httpClient.post<TokensResponse>(
               buildFetchTokenUrl(),
               buildFetchTokenByAuthCodeBody(this.getAuthCodeFromUrl(), this.getRedirectUri()),
-              HEADER)
-          ),
-          tap(({refreshToken, accessToken, expires_in}) => {
-            this.updateRefreshToken(refreshToken);
-            this.initAccessToken$$.next(accessToken);
-            this.expiresIn$$.next(expires_in);
-          }),
-          catchError(this.redirectToArcade)
-        ).subscribe()
+              HEADER).pipe(
+              tap(({refreshToken, accessToken, expires_in}) => {
+                this.updateRefreshToken(refreshToken);
+                this.initAccessToken$$.next(accessToken);
+                this.expiresIn$$.next(expires_in);
+              }),
+              catchError(this.redirectToArcade)
+            )
+          .subscribe()
     );
-  }
-
-  private getRedirectUri () {
-    const { protocol, host, pathname } = this.document.defaultView!.location
-    return protocol + '//' + host + pathname
-  }
-
-  private getAuthCodeFromUrl() {
-    const { search } = this.document.defaultView!.location;
-    return '';
   }
 
   private getAccessToken() {
 
-    if(!this.isInitAccessTokenExpired()) {
+    if(!isJwtTokenExpired(this.initAccessToken$$.getValue())) {
       return this.initAccessToken$$.asObservable();
     }
-    // TODO: Temporary code, testing purpose
-    return this.httpClient.get<string>(TOKEN_URL).pipe(
-      tap((data) =>  this.refreshToken$$.next(data)),
-      map((data) => data),
-      share({
-        connector: () => new ReplaySubject(1),
-        resetOnComplete: () => timer(ACCESS_TOKEN_TIMEOUT),
-      }));
+    // // TODO: Temporary code, testing purpose
+    // return this.httpClient.get<string>(TOKEN_URL).pipe(
+    //   tap((data) =>  this.refreshToken$$.next(data)),
+    //   map((data) => data),
+    //   share({
+    //     connector: () => new ReplaySubject(1),
+    //     resetOnComplete: () => timer(ACCESS_TOKEN_TIMEOUT),
+    //   }));
 
     return this.httpClient.post<TokensResponse>(
       buildFetchTokenUrl(),
@@ -121,31 +117,41 @@ export class TokenService implements OnDestroy {
 
   }
 
-  private isInitAccessTokenExpired(): boolean {
-    // TODO: Add the logic to test if the initAccessToken expired
-    if(!this.initAccessToken$$.getValue()){
-      return true;
-    }
-    return this.initAccessToken$$.getValue() !== 'Fake init Access Token';
+  private fetchAuthCodeAndUpdateStorageFetchingFlag(): void {
+    this.document.defaultView!.location.href = buildFetchAuthCodeUrl(this.getRedirectUri());
+    sessionStorage.setItem(HAS_FETCHED_AUTH_CODE_KEY, 'true');
+    return;
   }
 
   private updateRefreshToken(refreshToken: string) {
-    sessionStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, refreshToken);
     this.refreshToken$$.next(refreshToken);
+    sessionStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, refreshToken);
   }
 
   private redirectToArcade() {
+      console.log('redirectToArcade')
       // TODO: Redirect to ARCADE
       // this.router.navigate([]);
       return EMPTY;
   }
 
-  private isRefreshTokenValid (refreshToken: string | null) {
-    if(!refreshToken){
-      return false;
-    }
-    // TODO: Logic to check if the token is valid
-    return false;
+  private getAuthCodeFromUrl(): string {
+    return this.getQueryParams().split(AUTH_CODE_QUERY_PARAM_KEY)[1];
+  }
+
+  private getRedirectUri () {
+    const { protocol, host, pathname } = this.document.defaultView!.location
+    return protocol + '//' + host + pathname
+  }
+
+  private hasFetchedAuthCode (): boolean {
+    const query = this.getQueryParams();
+    return query.includes(AUTH_CODE_QUERY_PARAM_KEY) || query.includes(AUTH_CODE_ERROR_QUERY_PARAM_KEY);
+  }
+
+  private getQueryParams (): string {
+    const { search } = this.document.defaultView!.location;
+    return search;
   }
 
 }
