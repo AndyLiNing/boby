@@ -15,6 +15,9 @@ export class AboutComponent implements OnInit, AfterContentInit, AfterContentChe
   }
 
   ngOnInit() {
+    // *** IMPORTANT:
+    // All the values in async call of "ngOnInit" is rendered between "ngAfterContentChecked" and "ngAfterViewInit"
+    // *** IMPORTANT: 
     setTimeout(() => {
     //   this.person = {
     //     name: 'Person',
