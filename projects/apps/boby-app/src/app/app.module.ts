@@ -8,10 +8,16 @@ import { AppComponent } from './app.component';
 import { BobyLibModule } from '../../../../libs/boby-lib/src/lib';
 
 import { tokenInterceptorProviders } from "./token/token-interceptor.provider";
+import { TEST } from "./token/token.config";
+import { AboutComponent } from "./about/about.component";
+import {HomeComponent} from "./home/home.component";
+const a = TEST;
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    AboutComponent,
+    HomeComponent
   ],
   imports: [
     BrowserModule,
@@ -19,7 +25,7 @@ import { tokenInterceptorProviders } from "./token/token-interceptor.provider";
     AppRoutingModule,
     BobyLibModule
   ],
-  providers: [tokenInterceptorProviders],
+  // providers: [tokenInterceptorProviders],
   bootstrap: [AppComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 

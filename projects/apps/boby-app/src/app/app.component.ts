@@ -1,5 +1,7 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {TokenService} from "./token/token.service";
+import {TEST} from "./token/token.config";
+import {RootProvidedService} from "./root-provided.service";
 
 
 @Component({
@@ -10,11 +12,13 @@ import {TokenService} from "./token/token.service";
 export class AppComponent implements OnInit, OnDestroy{
   title = 'boby-app';
 
-  constructor(private tokenService: TokenService) {
-    this.tokenService.init();
+  constructor(private tokenService: TokenService, private appService: RootProvidedService) {
+    // this.tokenService.init();
   }
 
   ngOnInit() {
+
+    // const a = TEST;
     // this.tokenService.accessToken$.subscribe((data) => {
     //   console.log('First ngOnInit', data)
     // });
@@ -40,6 +44,7 @@ export class AppComponent implements OnInit, OnDestroy{
   }
 
   ngOnDestroy() {
+    console.log('ngOnDestroy AppComponent');
   }
 
 }

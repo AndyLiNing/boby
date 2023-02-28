@@ -15,3 +15,8 @@ const PATH = 'sesame/realms/partners/protocol/openid-connect/';
 export const GET_BY_AUTH_CODE_PATH = PATH + 'auth';
 
 export const GET_BY_REFRESH_TOKEN_PATH = PATH + 'token';
+
+console.log('token config')
+export const TEST = {
+  p1: 'p1'
+}
