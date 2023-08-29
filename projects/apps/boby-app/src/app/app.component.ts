@@ -1,23 +1,27 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {TokenService} from "./token/token.service";
-import {TEST} from "./token/token.config";
-import {RootProvidedService} from "./root-provided.service";
+import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
+import { TokenService } from "./token/token.service";
+import { RootProvidedService } from "./root-provided.service";
 
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
+  // providers: [
+  //   {provide: ErrorHandler, useClass: ErrorHandlerService}
+  // ],
+  // encapsulation: ViewEncapsulation.ShadowDom
 })
 export class AppComponent implements OnInit, OnDestroy{
   title = 'boby-app';
 
   constructor(private tokenService: TokenService, private appService: RootProvidedService) {
     // this.tokenService.init();
+    // console.log('AppComponent constructor')
   }
 
   ngOnInit() {
-
+    console.log('AppComponent ngOnInit')
     // const a = TEST;
     // this.tokenService.accessToken$.subscribe((data) => {
     //   console.log('First ngOnInit', data)

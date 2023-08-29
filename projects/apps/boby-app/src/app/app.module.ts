@@ -1,4 +1,4 @@
-import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, ErrorHandler, inject, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from "@angular/common/http";
 
@@ -11,6 +11,7 @@ import { tokenInterceptorProviders } from "./token/token-interceptor.provider";
 import { TEST } from "./token/token.config";
 import { AboutComponent } from "./about/about.component";
 import {HomeComponent} from "./home/home.component";
+import { ErrorHandlerService } from './services/error-handler/error-handler.service';
 const a = TEST;
 
 @NgModule({
@@ -22,12 +23,19 @@ const a = TEST;
   imports: [
     BrowserModule,
     HttpClientModule,
-    AppRoutingModule,
+    // AppRoutingModule,
     BobyLibModule
   ],
   // providers: [tokenInterceptorProviders],
+  providers: [
+    {provide: ErrorHandler, useClass: ErrorHandlerService}
+  ],
   bootstrap: [AppComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 
 })
-export class AppModule { }
+export class AppModule {
+  constructor(private errorHandlerService: ErrorHandlerService) {
+
+  }
+}

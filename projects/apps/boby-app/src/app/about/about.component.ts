@@ -1,4 +1,4 @@
-import {AfterContentChecked, AfterContentInit, AfterViewChecked, AfterViewInit, Component, OnInit} from '@angular/core';
+import { AfterContentChecked, AfterContentInit, AfterViewChecked, AfterViewInit, Component, OnInit } from '@angular/core';
 
 @Component({
   selector: 'about',
@@ -17,7 +17,7 @@ export class AboutComponent implements OnInit, AfterContentInit, AfterContentChe
   ngOnInit() {
     // *** IMPORTANT:
     // All the values in async call of "ngOnInit" is rendered between "ngAfterContentChecked" and "ngAfterViewInit"
-    // *** IMPORTANT: 
+    // *** IMPORTANT:
     setTimeout(() => {
     //   this.person = {
     //     name: 'Person',
