@@ -14,6 +14,11 @@ import {HomeComponent} from "./home/home.component";
 import { ErrorHandlerService } from './services/error-handler/error-handler.service';
 const a = TEST;
 
+// import { AnimalClass } from '../../../../libs/boby-lib/src/circular/animal.class'
+// import { DogClass } from '../../../../libs/boby-lib/src/circular/dog.class'
+
+import { AnimalClass, DogClass } from '../../../../libs/boby-lib/src/circular/internal';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -35,7 +40,9 @@ const a = TEST;
 
 })
 export class AppModule {
-  constructor(private errorHandlerService: ErrorHandlerService) {
 
+  constructor(private errorHandlerService: ErrorHandlerService) {
+    // const animal = new AnimalClass('animal', 0)
+   const dog = new DogClass('dog', 2)
   }
 }

@@ -11,10 +11,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor(private rootProvidedService: RootProvidedService) { }
 
   ngOnInit() {
-    this.rootProvidedService.req().subscribe((res) => {
-      console.warn('Http req', res);
-    });
-    this.rootProvidedService.longRunObs()
+    // this.rootProvidedService.req().subscribe((res) => {
+    //   console.warn('Http req', res);
+    // });
+    // this.rootProvidedService.longRunObs()
       // .subscribe((res) => {
       //   console.warn('longRunObs', res);
       // });
